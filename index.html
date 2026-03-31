@@ -6,18 +6,15 @@
     <title>Azeez Lifting Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #000; color: white; font-family: -apple-system, sans-serif; overflow-x: hidden; }
+        body { background-color: #000; color: white; font-family: -apple-system, sans-serif; }
         input { background: #1c1c1e; border: 1px solid #3a3a3c; color: white; padding: 15px; border-radius: 12px; width: 100%; font-size: 16px; }
-        .card { background: #111; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid #222; }
-        
+        .card { background: #111; border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid #222; }
         #sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100vh; background: #111; transition: 0.3s; z-index: 100; border-right: 1px solid #333; padding: 20px; overflow-y: auto; }
         #sidebar.open { left: 0; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
         .overlay.active { display: block; }
-        
         .month-btn { width: 100%; text-align: left; padding: 16px; margin-bottom: 8px; border-radius: 12px; background: #222; font-size: 14px; }
         .month-btn.active { background: #0a84ff; font-weight: bold; }
-        
         button.save-btn { background: #0a84ff; color: white; padding: 12px; border-radius: 12px; font-weight: bold; width: 90px; }
     </style>
 </head>
@@ -35,12 +32,10 @@
         <div class="w-8"></div>
     </header>
 
-    <div id="workout-list" class="space-y-6">
-        <div class="text-center text-gray-700 py-20 italic">Loading session...</div>
-    </div>
+    <div id="workout-list" class="space-y-6"></div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyj4BE4Z7H5rYe4bLoPiBEl3Tu2FoA5iPyyUS4WZyOm6c9KBHJNT4-zSq-slkquYbwY/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwl4FW831iXJCee_3dtRroQdie_OcYy4VjZibPvT1z0RRDtjtGwbCOXdhroxt8vEbmF/exec";
         let currentSheet = "";
 
         function toggleSidebar() {
@@ -53,7 +48,6 @@
             const sheets = await response.json();
             const list = document.getElementById('month-list');
             list.innerHTML = '';
-            
             sheets.reverse().forEach((name, index) => {
                 const btn = document.createElement('button');
                 btn.className = `month-btn ${index === 0 ? 'active' : ''}`;
@@ -69,9 +63,8 @@
             currentSheet = name;
             document.getElementById('current-title').innerText = name;
             if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
-            
             const container = document.getElementById('workout-list');
-            container.innerHTML = '<div class="text-center text-gray-700 py-20 italic">Updating lifts...</div>';
+            container.innerHTML = '<div class="text-center text-gray-700 py-20 italic">Updating...</div>';
 
             try {
                 const response = await fetch(`${API_URL}?sheet=${encodeURIComponent(name)}`);
@@ -83,26 +76,24 @@
                     div.className = 'card';
                     div.innerHTML = `
                         <div class="mb-6">
-                            <div class="text-blue-500 font-black text-xl leading-none uppercase mb-1">${item.exercise}</div>
-                            <div class="text-gray-500 text-xs font-bold uppercase tracking-widest">${item.setsReps}</div>
+                            <div class="text-blue-500 font-black text-xl leading-tight uppercase mb-1">${item.exercise}</div>
+                            <div class="text-gray-500 text-xs font-bold tracking-widest">${item.setsReps}</div>
                         </div>
                         <div class="flex items-end gap-4">
                             <div class="flex-1">
                                 <label class="block text-[10px] text-gray-600 uppercase mb-2 font-black">Weight (KG)</label>
-                                <input type="text" id="w-${item.row}" value="${item.weight}" placeholder="0">
+                                <input type="text" id="w-${item.row}" value="${item.weight}" placeholder="...">
                             </div>
                             <div class="flex-1">
                                 <label class="block text-[10px] text-gray-600 uppercase mb-2 font-black">RPE</label>
-                                <input type="text" id="r-${item.row}" value="${item.rpe}" placeholder="0">
+                                <input type="text" id="r-${item.row}" value="${item.rpe}" placeholder="...">
                             </div>
                             <button id="btn-${item.row}" class="save-btn" onclick="saveRow(${item.row}, ${item.col})">SAVE</button>
                         </div>
                     `;
                     container.appendChild(div);
                 });
-            } catch (e) {
-                container.innerHTML = '<div class="text-red-500 text-center font-bold">SYNC ERROR</div>';
-            }
+            } catch (e) { container.innerHTML = 'Error loading.'; }
         }
 
         async function saveRow(row, col) {
@@ -118,12 +109,8 @@
                 btn.innerText = "DONE";
                 btn.style.background = "#30d158";
                 setTimeout(() => { btn.innerText = "SAVE"; btn.style.background = "#0a84ff"; }, 2000);
-            } catch (e) {
-                btn.innerText = "ERR";
-                btn.style.background = "#ff453a";
-            }
+            } catch (e) { btn.innerText = "ERR"; }
         }
-
         init();
     </script>
 </body>
