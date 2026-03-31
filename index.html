@@ -7,39 +7,64 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: white; font-family: -apple-system, sans-serif; overflow-x: hidden; }
-        input { background: #1c1c1e; border: 1px solid #3a3a3c; color: white; padding: 15px; border-radius: 10px; width: 100%; font-size: 16px; }
+        input { background: #1c1c1e; border: 1px solid #3a3a3c; color: white; padding: 15px; border-radius: 10px; width: 100%; font-size: 16px; -webkit-appearance: none; }
         .card { background: #1c1c1e; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #2c2c2e; }
-        button { background: #0a84ff; color: white; padding: 12px; border-radius: 10px; font-weight: bold; width: 85px; }
         
-        /* Sidebar Styles */
-        #sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: #1c1c1e; transition: 0.3s; z-index: 100; border-right: 1px solid #3a3a3c; padding: 20px; }
+        /* Sidebar Styles with Scrolling Fix */
+        #sidebar { 
+            position: fixed; 
+            left: -280px; 
+            top: 0; 
+            width: 280px; 
+            height: 100vh; 
+            background: #1c1c1e; 
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 100; 
+            border-right: 1px solid #3a3a3c; 
+            padding: 20px 20px 100px 20px; 
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; 
+        }
         #sidebar.open { left: 0; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 90; }
+        
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
         .overlay.active { display: block; }
-        .month-btn { width: 100%; text-align: left; padding: 12px; margin-bottom: 8px; border-radius: 8px; background: #2c2c2e; font-size: 14px; }
-        .month-btn.active { background: #0a84ff; font-weight: bold; }
+        
+        .month-btn { width: 100%; text-align: left; padding: 14px; margin-bottom: 10px; border-radius: 12px; background: #2c2c2e; font-size: 15px; border: 1px solid #3a3a3c; transition: background 0.2s; }
+        .month-btn.active { background: #0a84ff; border-color: #0a84ff; font-weight: bold; }
+        
+        button.save-btn { background: #0a84ff; color: white; padding: 12px; border-radius: 10px; font-weight: bold; width: 85px; transition: all 0.2s; }
+        button.save-btn:active { transform: scale(0.95); opacity: 0.8; }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        #sidebar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="p-4 max-w-md mx-auto">
 
     <div id="sidebar">
-        <h2 class="text-xl font-bold mb-6 text-blue-400">Select Block</h2>
-        <div id="month-list" class="space-y-2">Loading blocks...</div>
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-black text-blue-400">Blocks</h2>
+            <button onclick="toggleSidebar()" class="text-gray-500 font-bold">X</button>
+        </div>
+        <div id="month-list" class="space-y-1">
+            <div class="text-gray-600 italic text-sm">Syncing blocks...</div>
+        </div>
     </div>
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
     <header class="flex justify-between items-center mb-8 mt-4">
-        <button onclick="toggleSidebar()" style="width: auto; background: none; font-size: 24px;">☰</button>
-        <h1 class="text-2xl font-black tracking-tight uppercase" id="current-title">TRAINING</h1>
-        <div style="width: 30px;"></div>
-    </header>
+        <button onclick="toggleSidebar()" class="w-12 h-12 flex items-center justify-center bg-[#1c1c1e] border border-[#333] rounded-xl text-xl">☰</button>
+        <h1 class="text-2xl font-black tracking-tight uppercase text-center flex-1" id="current-title">TRAINING</h1>
+        <div class="w-12"></div> </header>
 
     <div id="workout-list" class="space-y-4">
-        <div class="text-center text-gray-600 py-20 italic">Select a month from the menu...</div>
+        <div class="text-center text-gray-600 py-20 italic">Select a training block to begin...</div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxXZ11qE6ItiEQoyUVydFQmZi-kcKpgqLQIrwTcRYjMiZdbkSwWu7ubAsQH5jOfq1d9/exec";
+        // Update this URL with your latest Apps Script Deployment URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbymnMlmhNue89omGjzfYGk1Ph20gCl2CnadMR5HFT_wZC8ixHNi-Rkr-fzQmd1SaCA4/exec";
         let currentSheet = "";
 
         function toggleSidebar() {
@@ -48,61 +73,79 @@
         }
 
         async function init() {
-            // 1. Get list of months
-            const response = await fetch(`${API_URL}?getSheets=true`);
-            const sheets = await response.json();
-            const list = document.getElementById('month-list');
-            list.innerHTML = '';
-            
-            sheets.forEach((name, index) => {
-                const btn = document.createElement('button');
-                btn.className = `month-btn ${index === sheets.length - 1 ? 'active' : ''}`;
-                btn.innerText = name;
-                btn.onclick = () => selectMonth(name);
-                list.appendChild(btn);
-                if (index === sheets.length - 1) currentSheet = name;
-            });
+            try {
+                const response = await fetch(`${API_URL}?getSheets=true`);
+                const sheets = await response.json();
+                const list = document.getElementById('month-list');
+                list.innerHTML = '';
+                
+                // Show newest months at the top
+                sheets.reverse().forEach((name, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = `month-btn ${index === 0 ? 'active' : ''}`;
+                    btn.id = `btn-month-${name}`;
+                    btn.innerText = name;
+                    btn.onclick = () => selectMonth(name);
+                    list.appendChild(btn);
+                    if (index === 0) currentSheet = name;
+                });
 
-            if (currentSheet) selectMonth(currentSheet);
+                if (currentSheet) selectMonth(currentSheet);
+            } catch (e) {
+                document.getElementById('month-list').innerText = "Failed to load sheets. Check API URL.";
+            }
         }
 
         async function selectMonth(name) {
             currentSheet = name;
             document.getElementById('current-title').innerText = name;
-            toggleSidebar();
+            
+            // UI: Update sidebar active state
+            document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-month-${name}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            if (document.getElementById('sidebar').classList.contains('open')) {
+                toggleSidebar();
+            }
             
             const container = document.getElementById('workout-list');
-            container.innerHTML = '<div class="text-center text-gray-600 py-20 italic">Loading lifts...</div>';
+            container.innerHTML = '<div class="text-center text-gray-600 py-20 italic">Pulling lifts from Google Sheets...</div>';
 
             try {
                 const response = await fetch(`${API_URL}?sheet=${encodeURIComponent(name)}`);
                 const data = await response.json();
                 container.innerHTML = '';
 
+                if (data.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-10">No workout data found in this block.</div>';
+                    return;
+                }
+
                 data.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'card';
                     div.innerHTML = `
-                        <div class="text-left mb-4">
-                            <div class="text-blue-400 font-bold text-lg leading-tight">${item.exercise}</div>
-                            <div class="text-gray-500 text-xs mt-1 font-medium">${item.setsReps}</div>
+                        <div class="text-left mb-5">
+                            <div class="text-blue-400 font-extrabold text-xl leading-tight uppercase tracking-tight">${item.exercise}</div>
+                            <div class="text-gray-500 text-xs mt-1 font-bold tracking-widest opacity-80">${item.setsReps}</div>
                         </div>
                         <div class="flex items-end gap-3">
                             <div class="flex-1">
-                                <label class="block text-[10px] text-gray-500 uppercase mb-2 font-bold">Weight (KG)</label>
-                                <input type="text" id="w-${item.row}" value="${item.weight}" placeholder="...">
+                                <label class="block text-[10px] text-gray-600 uppercase mb-2 font-black">Weight (KG)</label>
+                                <input type="text" id="w-${item.row}" value="${item.weight}" placeholder="0" inputmode="decimal">
                             </div>
                             <div class="flex-1">
-                                <label class="block text-[10px] text-gray-500 uppercase mb-2 font-bold">RPE</label>
-                                <input type="text" id="r-${item.row}" value="${item.rpe}" placeholder="...">
+                                <label class="block text-[10px] text-gray-600 uppercase mb-2 font-black">RPE</label>
+                                <input type="text" id="r-${item.row}" value="${item.rpe}" placeholder="0" inputmode="decimal">
                             </div>
-                            <button id="btn-${item.row}" onclick="saveRow(${item.row}, ${item.col})">SAVE</button>
+                            <button id="btn-${item.row}" class="save-btn" onclick="saveRow(${item.row}, ${item.col})">SAVE</button>
                         </div>
                     `;
                     container.appendChild(div);
                 });
             } catch (e) {
-                container.innerHTML = '<div class="text-red-500 text-center">Load Error</div>';
+                container.innerHTML = '<div class="text-red-500 text-center font-bold">Sync Error. Refresh Page.</div>';
             }
         }
 
@@ -110,21 +153,38 @@
             const weight = document.getElementById(`w-${row}`).value;
             const rpe = document.getElementById(`r-${row}`).value;
             const btn = document.getElementById(`btn-${row}`);
+            
+            const originalColor = "#0a84ff";
             btn.innerText = "...";
+            btn.style.background = "#333";
+
             try {
-                await fetch(API_URL, {
+                const res = await fetch(API_URL, {
                     method: "POST",
                     body: JSON.stringify({ sheet: currentSheet, row, col, weight, rpe })
                 });
-                btn.innerText = "DONE";
-                btn.style.background = "#30d158";
-                setTimeout(() => { btn.innerText = "SAVE"; btn.style.background = "#0a84ff"; }, 2000);
+                
+                if (res.ok) {
+                    btn.innerText = "DONE";
+                    btn.style.background = "#30d158";
+                    setTimeout(() => { 
+                        btn.innerText = "SAVE"; 
+                        btn.style.background = originalColor; 
+                    }, 2000);
+                } else {
+                    throw new Error();
+                }
             } catch (e) {
                 btn.innerText = "ERR";
                 btn.style.background = "#ff453a";
+                setTimeout(() => { 
+                    btn.innerText = "SAVE"; 
+                    btn.style.background = originalColor; 
+                }, 2000);
             }
         }
 
+        // Initialize the app
         init();
     </script>
 </body>
