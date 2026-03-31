@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; min-height: 15.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Azeez Lifting&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { background-color: #121212; color: white; font-family: -apple-system, sans-serif; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>input { background: #1e1e1e; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; width: 80px; text-align: center; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.card { background: #1e1e1e; border-radius: 12px; padding: 15px; margin-bottom: 15px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>button { background: #007aff; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body class="p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1 class="text-2xl font-bold mb-6"&gt;Today's Session&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="workout-list"&gt;Loading your lifts...&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const API_URL = "<a href="https://script.google.com/macros/s/AKfycbwGBgAJW4-MKmF3Xo-p5cntvu0VDzU4qH2xEP66hUHMdva2TBfjiC6THneUbSpKAMqx/exec">https://script.google.com/macros/s/AKfycbwGBgAJW4-MKmF3Xo-p5cntvu0VDzU4qH2xEP66hUHMdva2TBfjiC6THneUbSpKAMqx/exec</a>";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>async function loadWorkout() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const response = await fetch(API_URL);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const data = await response.json();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const container = document.getElementById('workout-list');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>container.innerHTML = '';</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>data.forEach(item =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const div = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>div.className = 'card';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>div.innerHTML = `</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="flex justify-between items-center mb-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="font-bold text-lg text-blue-400"&gt;${item.exercise}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="text-gray-400"&gt;${item.sets} x ${item.reps}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="flex gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div&gt;&lt;label class="block text-xs text-gray-500"&gt;Weight&lt;/label&gt;&lt;input type="number" id="w-${item.row}" value="${item.weight}"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div&gt;&lt;label class="block text-xs text-gray-500"&gt;RPE&lt;/label&gt;&lt;input type="number" id="r-${item.row}" value="${item.rpe}"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;button onclick="saveRow(${item.row})" class="mt-4"&gt;Save&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>container.appendChild(div);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>async function saveRow(row) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const weight = document.getElementById(`w-${row}`).value;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const rpe = document.getElementById(`r-${row}`).value;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const btn = event.target;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>btn.innerText = "Saving...";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>btn.style.background = "#555";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>await fetch(API_URL, {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>method: "POST",</p>
+<p class="p1"><span class="Apple-converted-space">                </span>body: JSON.stringify({ row, weight, rpe })</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>btn.innerText = "Saved!";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>btn.style.background = "#28a745";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>setTimeout(() =&gt; { btn.innerText = "Save"; btn.style.background = "#007aff"; }, 2000);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>loadWorkout();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
