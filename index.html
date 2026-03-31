@@ -1,117 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Azeez Lifting</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #121212; color: white; font-family: -apple-system, sans-serif; }
+        input { background: #1e1e1e; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; }
+        .card { background: #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        button { background: #007aff; color: white; padding: 12px; border-radius: 8px; font-weight: bold; width: 80px; }
+    </style>
+</head>
 <body class="p-4 max-w-md mx-auto">
-
-    <h1 class="text-2xl font-bold mb-6 text-center">Y3M12: Mar 30 Session</h1>
-
-    <div id="workout-list" class="space-y-4">Loading...</div>
-
-
+    <h1 class="text-2xl font-bold mb-6 text-center text-blue-400">Workout Tracker</h1>
+    <div id="workout-list" class="space-y-4 text-center text-gray-500">Loading your lifts...</div>
 
     <script>
-
-        const API_URL = "https://script.google.com/macros/s/AKfycbwYhyExJ2ecGb8fPJTMwc_bvp2X1fyVB3JnQUcZEBY8sRaU555xmBgZC09SvAKyEe0/exec";
-
-
+        const API_URL = "https://script.google.com/macros/s/AKfycbxFxMXsoN_MfOSdRMzhpigXjqhg0Hs4VpObhMLiwqHlswBQzHFkZd40Ys65wb4zuMTh/exec";
 
         async function loadWorkout() {
-
             const container = document.getElementById('workout-list');
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                container.innerHTML = '';
 
-            const response = await fetch(API_URL);
-
-            const data = await response.json();
-
-            container.innerHTML = '';
-
-
-
-            data.forEach(item => {
-
-                const div = document.createElement('div');
-
-                div.className = 'card bg-[#1e1e1e] p-5 rounded-xl mb-4 shadow-lg';
-
-                div.innerHTML = `
-
-                    <div class="mb-3">
-
-                        <div class="text-blue-400 font-bold text-lg">${item.exercise}</div>
-
-                        <div class="text-gray-400 text-sm italic">${item.setsReps}</div>
-
-                    </div>
-
-                    <div class="flex items-end gap-3">
-
-                        <div class="flex-1">
-
-                            <label class="block text-[10px] text-gray-500 uppercase mb-1">Weight (KG)</label>
-
-                            <input type="text" id="w-${item.row}" class="w-full bg-[#2a2a2a] p-3 rounded-lg text-white" value="${item.weight || ''}">
-
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.innerHTML = `
+                        <div class="text-left mb-4">
+                            <div class="font-bold text-lg text-blue-300 uppercase tracking-tight">${item.exercise}</div>
+                            <div class="text-gray-500 text-sm">${item.setsReps}</div>
                         </div>
-
-                        <div class="flex-1">
-
-                            <label class="block text-[10px] text-gray-500 uppercase mb-1">RPE</label>
-
-                            <input type="number" id="r-${item.row}" class="w-full bg-[#2a2a2a] p-3 rounded-lg text-white" value="${item.rpe || ''}">
-
+                        <div class="flex items-end gap-3">
+                            <div class="flex-1">
+                                <label class="block text-[10px] text-gray-600 uppercase mb-1">Weight</label>
+                                <input type="text" id="w-${item.row}" value="${item.weight || ''}" placeholder="0">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-[10px] text-gray-600 uppercase mb-1">RPE</label>
+                                <input type="number" step="0.1" id="r-${item.row}" value="${item.rpe || ''}" placeholder="0">
+                            </div>
+                            <button id="btn-${item.row}" onclick="saveRow(${item.row}, ${item.col})">Save</button>
                         </div>
-
-                        <button onclick="saveRow(${item.row})" class="bg-blue-600 px-4 py-3 rounded-lg font-bold">Save</button>
-
-                    </div>
-
-                `;
-
-                container.appendChild(div);
-
-            });
-
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (e) {
+                container.innerText = "Error loading. Did you authorize the Google Script?";
+            }
         }
 
-
-
-        async function saveRow(row) {
-
+        async function saveRow(row, col) {
             const weight = document.getElementById(`w-${row}`).value;
-
             const rpe = document.getElementById(`r-${row}`).value;
-
-            const btn = event.target;
-
+            const btn = document.getElementById(`btn-${row}`);
+            
             btn.innerText = "...";
+            btn.style.background = "#444";
 
-
-
-            await fetch(API_URL, {
-
-                method: "POST",
-
-                body: JSON.stringify({ row, weight, rpe })
-
-            });
-
-
-
-            btn.innerText = "✓";
-
-            btn.className = "bg-green-600 px-4 py-3 rounded-lg font-bold";
-
-            setTimeout(() => { 
-
-                btn.innerText = "Save"; 
-
-                btn.className = "bg-blue-600 px-4 py-3 rounded-lg font-bold";
-
-            }, 2000);
-
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ row, col, weight, rpe })
+                });
+                btn.innerText = "✓";
+                btn.style.background = "#28a745";
+                setTimeout(() => { btn.innerText = "Save"; btn.style.background = "#007aff"; }, 2000);
+            } catch (e) {
+                btn.innerText = "Err";
+                btn.style.background = "#dc3545";
+            }
         }
-
-
 
         loadWorkout();
-
     </script>
-
 </body>
+</html>
