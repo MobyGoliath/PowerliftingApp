@@ -3,40 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PL PROGRAM</title>
+    <title>Azeez Lifting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #000; color: white; font-family: -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
-        input { background: #1c1c1e; border: 1px solid #3a3a3c; color: white; padding: 15px; border-radius: 12px; width: 100%; font-size: 16px; outline: none; }
-        input:focus { border-color: #0a84ff; }
-        .card { background: #111; border-radius: 20px; padding: 22px; margin-bottom: 18px; border: 1px solid #222; }
+        body { background-color: #000; color: white; font-family: -apple-system, sans-serif; }
+        input { background: #1c1c1e; border: 1px solid #3a3a3c; color: white; padding: 14px; border-radius: 12px; width: 100%; font-size: 16px; outline: none; }
+        .card { background: #111; border-radius: 24px; padding: 24px; margin-bottom: 20px; border: 1px solid #222; }
         #sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100vh; background: #111; transition: 0.3s; z-index: 100; border-right: 1px solid #333; padding: 20px; overflow-y: auto; }
         #sidebar.open { left: 0; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
         .overlay.active { display: block; }
-        .month-btn { width: 100%; text-align: left; padding: 16px; margin-bottom: 8px; border-radius: 12px; background: #222; font-size: 14px; border: 1px solid transparent; }
-        .month-btn.active { background: #0a84ff; font-weight: bold; border-color: #5eaeff; }
+        .month-btn { width: 100%; text-align: left; padding: 16px; margin-bottom: 8px; border-radius: 12px; background: #222; font-size: 14px; }
+        .month-btn.active { background: #0a84ff; font-weight: bold; }
         button.save-btn { background: #0a84ff; color: white; padding: 12px; border-radius: 12px; font-weight: bold; width: 90px; }
     </style>
 </head>
 <body class="p-4 max-w-md mx-auto">
 
     <div id="sidebar">
-        <h2 class="text-2xl font-black mb-8 text-blue-400 tracking-tighter">TRAINING BLOCKS</h2>
+        <h2 class="text-xl font-black mb-8 text-blue-400 uppercase tracking-widest">Training Blocks</h2>
         <div id="month-list" class="space-y-2"></div>
     </div>
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
     <header class="flex justify-between items-center mb-10 mt-6">
-        <button onclick="toggleSidebar()" class="w-10 h-10 flex items-center justify-center bg-[#1c1c1e] rounded-lg border border-[#333]">☰</button>
-        <h1 class="text-2xl font-black uppercase tracking-tighter" id="current-title">WORKOUT</h1>
-        <div class="w-10"></div>
+        <button onclick="toggleSidebar()" class="text-2xl">☰</button>
+        <h1 class="text-2xl font-black uppercase tracking-tighter" id="current-title">Lifts</h1>
+        <div class="w-8"></div>
     </header>
 
-    <div id="workout-list" class="space-y-4"></div>
+    <div id="workout-list" class="space-y-6"></div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyQlvQ2fbaA6iqiN8I-9jixE4j1pyPlV6wptzpEyX6D4Xb9yZ6w8V2O-FevCRwgCUSo/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxhG8BSJa7S6Jj5iNXNUdH8Z6RLmGgjM3DmNcnlJtF7aGDGeESiRbLQHgbTiaaSm5nt/exec";
         let currentSheet = "";
 
         function toggleSidebar() {
@@ -45,28 +44,25 @@
         }
 
         async function init() {
-            try {
-                const response = await fetch(`${API_URL}?getSheets=true`);
-                const sheets = await response.json();
-                const list = document.getElementById('month-list');
-                list.innerHTML = '';
-                sheets.reverse().forEach((name, index) => {
-                    const btn = document.createElement('button');
-                    btn.className = `month-btn ${index === 0 ? 'active' : ''}`;
-                    btn.innerText = name;
-                    btn.onclick = () => selectMonth(name);
-                    list.appendChild(btn);
-                    if (index === 0) currentSheet = name;
-                });
-                if (currentSheet) selectMonth(currentSheet);
-            } catch (e) { console.error("Init failed"); }
+            const response = await fetch(`${API_URL}?getSheets=true`);
+            const sheets = await response.json();
+            const list = document.getElementById('month-list');
+            list.innerHTML = '';
+            sheets.reverse().forEach((name, index) => {
+                const btn = document.createElement('button');
+                btn.className = `month-btn ${index === 0 ? 'active' : ''}`;
+                btn.innerText = name;
+                btn.onclick = () => selectMonth(name);
+                list.appendChild(btn);
+                if (index === 0) currentSheet = name;
+            });
+            if (currentSheet) selectMonth(currentSheet);
         }
 
         async function selectMonth(name) {
             currentSheet = name;
             document.getElementById('current-title').innerText = name;
             if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
-            
             const container = document.getElementById('workout-list');
             container.innerHTML = '<div class="text-center text-gray-700 py-20 italic">Loading session...</div>';
 
@@ -80,25 +76,25 @@
                     div.className = 'card';
                     div.innerHTML = `
                         <div class="mb-6">
-                            <div class="text-blue-500 font-black text-xl leading-tight uppercase mb-1">${item.exercise}</div>
-                            <div class="text-gray-400 text-xs font-bold tracking-widest">${item.setsReps}</div>
-                            ${item.notes ? `<div class="text-gray-500 text-[11px] mt-2 italic leading-relaxed border-l-2 border-gray-800 pl-3">${item.notes}</div>` : ''}
+                            <div class="text-blue-500 font-black text-2xl leading-none uppercase mb-2">${item.exercise}</div>
+                            <div class="text-gray-400 text-sm font-bold tracking-widest border-b border-gray-900 pb-2 mb-2">${item.setsReps}</div>
+                            ${item.notes ? `<div class="text-gray-600 text-xs italic leading-relaxed">${item.notes}</div>` : ''}
                         </div>
                         <div class="flex items-end gap-4">
                             <div class="flex-1">
-                                <label class="block text-[10px] text-gray-600 uppercase mb-2 font-black">Weight (KG)</label>
-                                <input type="text" id="w-${item.row}" value="${item.weight}" placeholder="...">
+                                <label class="block text-[10px] text-gray-700 uppercase mb-2 font-black tracking-widest">Weight (KG)</label>
+                                <input type="text" id="w-${item.row}" value="${item.weight}" placeholder="---">
                             </div>
                             <div class="flex-1">
-                                <label class="block text-[10px] text-gray-600 uppercase mb-2 font-black">RPE</label>
-                                <input type="text" id="r-${item.row}" value="${item.rpe}" placeholder="...">
+                                <label class="block text-[10px] text-gray-700 uppercase mb-2 font-black tracking-widest">RPE</label>
+                                <input type="text" id="r-${item.row}" value="${item.rpe}" placeholder="---">
                             </div>
                             <button id="btn-${item.row}" class="save-btn" onclick="saveRow(${item.row}, ${item.col})">SAVE</button>
                         </div>
                     `;
                     container.appendChild(div);
                 });
-            } catch (e) { container.innerHTML = '<div class="text-center py-20">Error Loading Session</div>'; }
+            } catch (e) { container.innerHTML = '<div class="text-red-500 text-center">Connection Error</div>'; }
         }
 
         async function saveRow(row, col) {
