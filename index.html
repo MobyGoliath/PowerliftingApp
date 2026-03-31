@@ -35,7 +35,7 @@
     <div id="workout-list" class="space-y-6"></div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwl4FW831iXJCee_3dtRroQdie_OcYy4VjZibPvT1z0RRDtjtGwbCOXdhroxt8vEbmF/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwphsn_ac0QKms06T-gv7WekUYpUAtsgF3jkH-2lZ_mLozO2H2p68N37D2GLYjQfx6Q/exec";
         let currentSheet = "";
 
         function toggleSidebar() {
@@ -64,7 +64,7 @@
             document.getElementById('current-title').innerText = name;
             if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
             const container = document.getElementById('workout-list');
-            container.innerHTML = '<div class="text-center text-gray-700 py-20 italic">Updating...</div>';
+            container.innerHTML = '<div class="text-center text-gray-700 py-20 italic">Updating session...</div>';
 
             try {
                 const response = await fetch(`${API_URL}?sheet=${encodeURIComponent(name)}`);
